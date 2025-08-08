@@ -110,17 +110,15 @@
   </header>
 
   <!-- 英雄区域 -->
-  <section class="relative min-h-screen flex items-center justify-center bg-gradient-blue animate-gradient overflow-hidden">
-    <div class="absolute inset-0 opacity-20">
-      <div class="absolute w-64 h-64 rounded-full bg-white/30 blur-3xl -top-10 -left-10 animate-float"></div>
-      <div class="absolute w-96 h-96 rounded-full bg-white/20 blur-3xl bottom-10 right-10 animate-float" style="animation-delay: 2s"></div>
-      <div class="absolute w-72 h-72 rounded-full bg-white/20 blur-3xl top-1/3 right-1/4 animate-float" style="animation-delay: 4s"></div>
-    </div>
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('logo.png'); filter: blur(8px); transform: scale(1.1);"></div>
+    <!-- 移除原有的模糊圆形元素，避免与背景图冲突 -->
+      <div class="absolute inset-0 bg-black/30"></div> <!-- 添加半透明黑色背景增强文字可读性 -->
     
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <div class="flex flex-col md:flex-row items-center">
-        <div class="md:w-1/2 text-center md:text-left mb-10 md:mb-0">
-          <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-white leading-tight mb-4 text-shadow">
+        <div class="md:w-1/2 text-center md:text-left mb-10 md:mb-0 bg-black/30 backdrop-blur-sm p-12 rounded-xl">
+          <h1 class="text-[clamp(2rem,4vw,3.5rem)] font-bold text-white leading-tight mb-4 text-shadow whitespace-nowrap">
             GlidePlum<span class="text-accent">滑行李子</span>
           </h1>
           <p class="text-[clamp(1.2rem,2vw,1.5rem)] text-white/90 mb-8 max-w-xl mx-auto md:mx-0">
@@ -140,25 +138,8 @@
         </div>
         
         <!-- 删除英雄区域的产品展示图片 -->
-        <div class="md:w-1/2 flex justify-center">
-          <div class="relative w-full max-w-md">
-            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-2xl hover-scale">
-              <div class="bg-white rounded-xl overflow-hidden shadow-lg">
-                <img src="https://picsum.photos/800/600?random=1" alt="月光客户端产品展示" class="w-full h-auto">
-                <div class="p-6">
-                  <h3 class="text-xl font-bold text-dark mb-2">MoonlightPro</h3>
-                  <p class="text-gray-600 mb-4">高性能1.8.9 解决方案，为您带来极致流畅体验</p>
-                  <div class="flex justify-between items-center">
-                    <span class="text-primary font-semibold">了解更多</span>
-                    <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                      <i class="fa fa-star mr-1"></i>4.9/5
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- 英雄区域的产品展示图片已删除 -->
+        <div class="md:w-1/2"></div>
       </div>
     </div>
     
@@ -326,7 +307,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-scale">
           <div class="relative">
-            <img src="https://picsum.photos/800/450?random=2" alt="MoonlightPro client产品界面" class="w-full h-64 object-cover">
+            <img src="1.png" alt="MoonlightPro client产品界面" class="w-full h-64 object-cover">
             <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
               旗舰产品
             </div>
@@ -355,7 +336,7 @@
         
         <div class="bg-white rounded-xl shadow-lg overflow-hidden hover-scale">
           <div class="relative">
-            <img src="https://picsum.photos/800/450?random=3" alt="Thor client产品界面" class="w-full h-64 object-cover">
+            <img src="2.png" alt="Thor client产品界面" class="w-full h-64 object-cover">
             <div class="absolute top-4 right-4 bg-secondary text-white px-3 py-1 rounded-full text-sm font-medium">
               开发中
             </div>
@@ -370,7 +351,7 @@
               <h3 class="text-xl font-bold">Thor client</h3>
             </div>
             <p class="text-gray-600 mb-6">
-              Thor client是一款专为Minecraft 1.21版本打造的高性能MCP客户端，集成了丰富的功能和优化，为玩家提供更流畅、更丰富的游戏体验。支持多种模组和自定义配置，满足不同玩家的需求。
+              Thor client是一款专为Minecraft 1.21版本打造的高性能MCP客户端，集成了丰富的功能和优化，为玩家提供更流畅、更丰富的游戏体验。支持多种模组和自定义配置，满足不同玩家的需求。  （注:此项目为魔改版本，添加了更多的重锤功能，原作: LiquidBounceNextGen）
             </p>
             <div class="flex flex-wrap gap-3 mb-6">
               <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">Minecraft 1.21</span>
