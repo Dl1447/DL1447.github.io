@@ -630,7 +630,8 @@
             <span>GlidePlum</span>
           </a>
           <p class="text-gray-400 mb-6">
-            <span id="easter-egg-trigger" class="cursor-pointer hover:text-primary transition-colors">以 Glide 之速，结 Plum 之果</span>
+            以 Glide 之速，结 Plum 之果
+             
           </p>
           <div class="flex space-x-4">
             <a href="https://github.com/Dl1447" target="_blank" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors">
@@ -683,6 +684,25 @@
       </div>
     </div>
   </footer>
+
+  <!-- 小恐龙跳跃游戏 -->
+  <div id="dino-game" class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4 text-center">
+      <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-dark mb-8">小恐龙跳跃</h2>
+      <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6 hover-scale">
+        <div class="relative mb-6">
+          <canvas id="dinoCanvas" class="w-full h-64 bg-gray-100 rounded-lg mx-auto" width="800" height="200"></canvas>
+          <div class="absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-lg text-lg font-bold" id="dinoScore">得分: 0</div>
+          <div class="absolute top-4 right-4 bg-secondary text-white px-4 py-2 rounded-lg text-lg font-bold" id="dinoHighScore">最高分: 0</div>
+        </div>
+        <div class="flex justify-center gap-4 mb-4">
+          <button id="startDinoGame" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all">开始游戏</button>
+          <button id="restartDinoGame" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-all" disabled>重新开始</button>
+        </div>
+        <p class="text-gray-600 text-center"><i class="fa fa-mouse-pointer mr-2"></i> 点击屏幕或按空格键跳跃，避开障碍物</p>
+      </div>
+    </div>
+  </div>
 
   <!-- 返回顶部按钮 -->
   <button id="back-to-top" class="fixed bottom-6 right-6 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
@@ -817,267 +837,199 @@
     
     window.addEventListener('scroll', animateOnScroll);
     animateOnScroll(); // 初始加载时检查
-  <!-- 滑行小游戏彩蛋 -->
-  <div id="glide-game-container" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center">
-    <div class="bg-white rounded-xl p-6 max-w-2xl w-full mx-4">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-dark">滑行小游戏</h3>
-        <button id="close-game" class="text-gray-500 hover:text-dark transition-colors">
-          <i class="fa fa-times text-xl"></i>
-        </button>
-      </div>
-      <div class="relative mb-6">
-        <canvas id="glideGame" class="w-full h-64 bg-gray-100 rounded-lg mx-auto" width="800" height="200"></canvas>
-        <div class="absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-lg text-lg font-bold" id="glideScoreDisplay">得分: 0</div>
-      </div>
-      <div class="flex justify-center gap-4 mb-4">
-        <button id="start-glide-game" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all">开始游戏</button>
-        <button id="restart-glide-game" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-all" disabled>重新开始</button>
-      </div>
-      <p class="text-gray-600 text-center"><i class="fa fa-keyboard-o mr-2"></i> 按空格键或上箭头键跳跃，避开障碍物</p>
-    </div>
-  </div>
 
-  <script>
-    // 滑行小游戏代码
-    // 确保DOM加载完成后执行
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM已加载，开始初始化彩蛋游戏');
+  // 小恐龙跳跃游戏代码
+  document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('dinoCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('dinoScore');
+    const highScoreDisplay = document.getElementById('dinoHighScore');
+    const startButton = document.getElementById('startDinoGame');
+    const restartButton = document.getElementById('restartDinoGame');
 
-      // 获取DOM元素
-      const trigger = document.getElementById('easter-egg-trigger');
-      console.log('获取trigger元素:', trigger);
+    // 游戏状态
+    let isRunning = false;
+    let score = 0;
+    let highScore = localStorage.getItem('dinoHighScore') || 0;
+    highScoreDisplay.textContent = `最高分: ${highScore}`;
 
-      const gameContainer = document.getElementById('glide-game-container');
-      console.log('获取gameContainer元素:', gameContainer);
+    // 恐龙属性
+    const dino = {
+      x: 50,
+      y: 150,
+      width: 50,
+      height: 50,
+      jumping: false,
+      jumpHeight: 15,
+      gravity: 0.8,
+      velocity: 0
+    };
 
-      const closeBtn = document.getElementById('close-game');
-      const canvas = document.getElementById('glideGame');
-      const ctx = canvas.getContext('2d');
-      const scoreDisplay = document.getElementById('glideScoreDisplay');
-      const startBtn = document.getElementById('start-glide-game');
-      const restartBtn = document.getElementById('restart-glide-game');
+    // 障碍物属性
+    const obstacles = [];
+    let obstacleSpeed = 5;
+    let obstacleSpawnRate = 1500; // 毫秒
+    let lastObstacleTime = 0;
 
-      // 游戏状态
-      let isRunning = false;
-      let isGameOver = false;
-      let score = 0;
-      let gameSpeed = 5;
-      let animationId = null;
+    // 地面属性
+    const groundY = 200;
 
-      // 玩家对象
-      const player = {
-        x: 50,
-        y: 150,
-        width: 30,
-        height: 50,
-        jumping: false,
-        jumpHeight: 100,
-        jumpSpeed: 0,
-        gravity: 0.5
-      };
+    // 开始游戏
+    startButton.addEventListener('click', startGame);
+    restartButton.addEventListener('click', restartGame);
 
-      // 障碍物数组
-      const obstacles = [];
-
-      // 触发彩蛋显示 - 使用箭头函数确保this上下文
-      if (trigger) {
-        trigger.addEventListener('click', () => {
-          console.log('彩蛋被触发！');
-          gameContainer.classList.remove('hidden');
-          gameContainer.classList.add('flex');
-          // 确保游戏容器显示
-          setTimeout(() => {
-            if (gameContainer.classList.contains('hidden')) {
-              console.log('强制显示游戏容器');
-              gameContainer.classList.remove('hidden');
-              gameContainer.classList.add('flex');
-            }
-          }, 100);
-        });
-      } else {
-        console.error('未找到trigger元素！');
+    // 点击屏幕跳跃
+    canvas.addEventListener('click', function() {
+      if (isRunning && !dino.jumping) {
+        jump();
       }
-
-      // 关闭游戏
-      closeBtn.addEventListener('click', function() {
-        gameContainer.classList.add('hidden');
-        gameContainer.classList.remove('flex');
-        stopGame();
-      });
-
-      // 开始游戏
-      startBtn.addEventListener('click', function() {
-        if (!isRunning && !isGameOver) {
-          startGame();
-        }
-      });
-
-      // 重新开始
-      restartBtn.addEventListener('click', function() {
-        if (isGameOver) {
-          initGame();
-        }
-      });
-
-      // 初始化游戏
-      function initGame() {
-        player.x = 50;
-        player.y = 150;
-        player.jumping = false;
-        player.jumpSpeed = 0;
-        obstacles.length = 0;
-        score = 0;
-        gameSpeed = 5;
-        isRunning = false;
-        isGameOver = false;
-        scoreDisplay.textContent = `得分: ${score}`;
-        startBtn.disabled = false;
-        restartBtn.disabled = true;
-        draw();
-      }
-
-      // 开始游戏
-      function startGame() {
-        isRunning = true;
-        isGameOver = false;
-        startBtn.disabled = true;
-        restartBtn.disabled = true;
-        gameLoop();
-      }
-
-      // 停止游戏
-      function stopGame() {
-        isRunning = false;
-        if (animationId) {
-          cancelAnimationFrame(animationId);
-          animationId = null;
-        }
-      }
-
-      // 游戏结束
-      function gameOver() {
-        isRunning = false;
-        isGameOver = true;
-        startBtn.disabled = true;
-        restartBtn.disabled = false;
-      }
-
-      // 生成障碍物
-      function spawnObstacle() {
-        const minGap = 150;
-        const maxGap = 300;
-        const gap = Math.random() * (maxGap - minGap) + minGap;
-
-        if (obstacles.length === 0 || canvas.width - obstacles[obstacles.length - 1].x > gap) {
-          const height = Math.random() * 30 + 20;
-          obstacles.push({
-            x: canvas.width,
-            y: canvas.height - height - 10,
-            width: 20,
-            height: height
-          });
-        }
-      }
-
-      // 更新游戏状态
-      function update() {
-        if (!isRunning) return;
-
-        // 更新分数
-        score += 0.1;
-        scoreDisplay.textContent = `得分: ${Math.floor(score)}`;
-
-        // 增加游戏速度
-        if (Math.floor(score) % 100 === 0 && gameSpeed < 10) {
-          gameSpeed += 0.1;
-        }
-
-        // 处理跳跃
-        if (player.jumping) {
-          player.y -= player.jumpSpeed;
-          player.jumpSpeed -= player.gravity;
-
-          if (player.y >= 150) {
-            player.y = 150;
-            player.jumping = false;
-          }
-        }
-
-        // 生成障碍物
-        spawnObstacle();
-
-        // 更新障碍物位置
-        for (let i = 0; i < obstacles.length; i++) {
-          obstacles[i].x -= gameSpeed;
-
-          // 移除屏幕外的障碍物
-          if (obstacles[i].x + obstacles[i].width < 0) {
-            obstacles.splice(i, 1);
-            i--;
-          }
-
-          // 碰撞检测
-          if (
-            player.x < obstacles[i].x + obstacles[i].width &&
-            player.x + player.width > obstacles[i].x &&
-            player.y < obstacles[i].y + obstacles[i].height &&
-            player.y + player.height > obstacles[i].y
-          ) {
-            gameOver();
-          }
-        }
-      }
-
-      // 绘制游戏
-      function draw() {
-        // 清空画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // 绘制地面
-        ctx.fillStyle = '#333';
-        ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
-
-        // 绘制玩家
-        ctx.fillStyle = '#165DFF';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-
-        // 绘制障碍物
-        ctx.fillStyle = '#FF5722';
-        for (const obstacle of obstacles) {
-          ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-        }
-      }
-
-      // 游戏循环
-      function gameLoop() {
-        if (!isRunning) return;
-
-        update();
-        draw();
-        animationId = requestAnimationFrame(gameLoop);
-      }
-
-      // 键盘控制
-      document.addEventListener('keydown', function(e) {
-        if ((e.code === 'Space' || e.code === 'ArrowUp') && !player.jumping && isRunning) {
-          player.jumping = true;
-          player.jumpSpeed = 10;
-        }
-      });
-
-      // 触摸控制
-      canvas.addEventListener('click', function() {
-        if (!player.jumping && isRunning) {
-          player.jumping = true;
-          player.jumpSpeed = 10;
-        }
-      });
-
-      // 初始化游戏
-      initGame();
     });
 
+    // 空格键跳跃
+    document.addEventListener('keydown', function(e) {
+      if ((e.code === 'Space' || e.code === 'ArrowUp') && isRunning && !dino.jumping) {
+        e.preventDefault();
+        jump();
+      }
+    });
+
+    // 跳跃函数
+    function jump() {
+      dino.jumping = true;
+      dino.velocity = -dino.jumpHeight;
+    }
+
+    // 开始游戏
+    function startGame() {
+      if (!isRunning) {
+        isRunning = true;
+        score = 0;
+        scoreDisplay.textContent = `得分: ${score}`;
+        obstacles.length = 0;
+        lastObstacleTime = Date.now();
+        obstacleSpeed = 5;
+        dino.y = 150;
+        dino.jumping = false;
+        dino.velocity = 0;
+        startButton.disabled = true;
+        restartButton.disabled = false;
+        gameLoop();
+      }
+    }
+
+    // 重新开始游戏
+    function restartGame() {
+      startGame();
+    }
+
+    // 游戏结束
+    function gameOver() {
+      isRunning = false;
+      startButton.disabled = false;
+
+      // 更新最高分
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('dinoHighScore', highScore);
+        highScoreDisplay.textContent = `最高分: ${highScore}`;
+      }
+    }
+
+    // 生成障碍物
+    function spawnObstacle() {
+      const now = Date.now();
+      if (now - lastObstacleTime > obstacleSpawnRate) {
+        const obstacleWidth = 30;
+        const obstacleHeight = Math.random() * 30 + 20; // 20-50px高度
+        obstacles.push({
+          x: canvas.width,
+          y: groundY - obstacleHeight,
+          width: obstacleWidth,
+          height: obstacleHeight
+        });
+        lastObstacleTime = now;
+
+        // 随时间增加难度
+        obstacleSpeed += 0.1;
+        if (obstacleSpawnRate > 800) {
+          obstacleSpawnRate -= 10;
+        }
+      }
+    }
+
+    // 更新游戏状态
+    function update() {
+      // 更新分数
+      if (isRunning) {
+        score += 0.1;
+        scoreDisplay.textContent = `得分: ${Math.floor(score)}`;
+      }
+
+      // 恐龙跳跃逻辑
+      if (dino.jumping) {
+        dino.velocity += dino.gravity;
+        dino.y += dino.velocity;
+
+        if (dino.y >= groundY - dino.height) {
+          dino.y = groundY - dino.height;
+          dino.jumping = false;
+          dino.velocity = 0;
+        }
+      }
+
+      // 生成和更新障碍物
+      spawnObstacle();
+
+      for (let i = 0; i < obstacles.length; i++) {
+        obstacles[i].x -= obstacleSpeed;
+
+        // 移除屏幕外的障碍物
+        if (obstacles[i].x + obstacles[i].width < 0) {
+          obstacles.splice(i, 1);
+          i--;
+        }
+
+        // 碰撞检测
+        if (
+          dino.x < obstacles[i].x + obstacles[i].width &&
+          dino.x + dino.width > obstacles[i].x &&
+          dino.y < obstacles[i].y + obstacles[i].height &&
+          dino.y + dino.height > obstacles[i].y
+        ) {
+          gameOver();
+        }
+      }
+    }
+
+    // 绘制游戏
+    function draw() {
+      // 清空画布
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 绘制地面
+      ctx.fillStyle = '#333';
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+
+      // 绘制恐龙
+      ctx.fillStyle = '#165DFF';
+      ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+
+      // 绘制障碍物
+      ctx.fillStyle = '#FF5722';
+      for (const obstacle of obstacles) {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      }
+    }
+
+    // 游戏循环
+    function gameLoop() {
+      if (!isRunning) return;
+
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+  });
   </script>
 </body>
 </html>
